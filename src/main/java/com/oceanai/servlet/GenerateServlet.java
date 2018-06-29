@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.oceanai.bean.DeviceInfo;
 import com.oceanai.bean.LicenseInfo;
+import com.oceanai.bean.LicenseKey;
 import com.oceanai.util.DAO;
 import com.oceanai.util.HttpUtil;
 import com.oceanai.util.RSATool;
@@ -44,11 +45,14 @@ public class GenerateServlet extends HttpServlet {
     String publicKey = rsaTool.getPublicKeyBase64();
     String privateKey = rsaTool.getPrivateKeyBase64();
 
-    // raw 做sha256 加密
-    String sha256 = SHA256Util.getSHA256StrJava(raw);
+    // device信息 做sha256 加密
+    String date = deviceInfo.validDate;
+    deviceInfo.validDate = null;
+    String sha256 = SHA256Util.getSHA256StrJava(gson.toJson(deviceInfo));
 
-    // 使用私钥加密
-    String licenseCode = rsaTool.encrypt(sha256);
+    // 使用私钥加密 硬件sha256 和有效期
+    LicenseKey licenseKey = new LicenseKey(sha256, date);
+    String licenseCode = rsaTool.encrypt(gson.toJson(licenseKey));
 
     // 写入数据库
     DAO dao = new DAO();
