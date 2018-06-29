@@ -3,4 +3,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
+  <display-name>license-key</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <servlet>
+    <servlet-name>Generate</servlet-name>
+    <servlet-class>com.oceanai.servlet.GenerateServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>Generate</servlet-name>
+    <url-pattern>/Generate</url-pattern>
+  </servlet-mapping>
 </web-app>
