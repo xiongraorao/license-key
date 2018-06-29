@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>license</title>
+  <script src="./js/jquery-1.11.3.min.js" type="text/javascript"></script>
+</head>
+<body>
+<p>
+  生成软件授权码
+</p>
+<br>
+  姓名: <input type="text" name="owner" id="owner"><br>
+  主板序列号: <input type="text" name="boardSn" id="boardSn"><br>
+    MAC地址: <input type="text" name="macAdd" id="macAdd"><br>
+  系统硬盘序列号: <input type="text" name="hddSn" id="hddSn"><br>
+  证书有效期: <input type="date" name="validDate" id="validDate"> <br>
+  <input type="button" value="注册" id="submit"><br>
+  <div id = 'response'></div>
+<script type="text/javascript">
+  //发送表单ajax请求
+  $("#submit").on('click', function () {
+    var data = {
+      owner: $('#owner').val(),
+      boardSn: $('#boardSn').val(),
+      macAdd: $('#macAdd').val(),
+      hddSn: $('#hddSn').val(),
+      validDate: $('#validDate').val()
+    };
+    //var dataParse = JSON.parse(data);
+    $.ajax({
+      url: "/generate",
+      type: "POST",
+      data: JSON.stringify(data),
+      contentType: "application/json",
+      success: function (res) {
+        $('#response').html("<h1> 生成的注册码</h1> <br>" + JSON.stringify(res));
+      }
+    });
+  });
+</script>
+</body>
+</html>
