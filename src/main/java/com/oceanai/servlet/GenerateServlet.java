@@ -56,6 +56,7 @@ public class GenerateServlet extends HttpServlet {
 
     // 写入数据库
     DAO dao = new DAO();
+    deviceInfo.validDate = date;
     String sql =
         "insert into t_device(owner, boardSn, macAdd, hddSn, privateKey, publicKey, validDate, sha256) "
             + "VALUES (?,?,?,?,?,?,?,?)";

@@ -31,7 +31,10 @@ public class Main {
     ResourceHandler handler = new ResourceHandler();  //静态资源处理的handler
     handler.setDirectoriesListed(true);  //会显示一个列表
     handler.setWelcomeFiles(new String[]{"index.html"});
-    handler.setResourceBase("src/main/webapp");
+    // comment next line in release
+    //handler.setResourceBase("src/main/resources/");
+    handler.setResourceBase("./webapp/");
+    System.out.println(handler.getBaseResource());
 
     HandlerCollection handlerCollection = new HandlerCollection();
     //handlerCollection.setHandlers(new Handler[]{contextHandler, new DefaultHandler()});
