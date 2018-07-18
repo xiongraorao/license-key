@@ -9,10 +9,13 @@ import com.oceanai.util.DAO;
 import com.oceanai.util.HttpUtil;
 import com.oceanai.util.RSATool;
 import com.oceanai.util.SHA256Util;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,50 +43,65 @@ public class GenerateServlet extends HttpServlet {
     System.out.println("raw data: " + raw);
     //Gson gson = new Gson();
     Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-    DeviceInfo deviceInfo = gson.fromJson(raw, DeviceInfo.class);
-    RSATool rsaTool = RSATool.getInstance();
-    String publicKey = rsaTool.getPublicKeyBase64();
-    String privateKey = rsaTool.getPrivateKeyBase64();
-
-    // device信息 做sha256 加密
-    String date = deviceInfo.validDate;
-    deviceInfo.validDate = null;
-    String sha256 = SHA256Util.getSHA256StrJava(gson.toJson(deviceInfo));
-
-    // 使用私钥加密 硬件sha256 和有效期
-    LicenseKey licenseKey = new LicenseKey(sha256, date);
-    String licenseCode = rsaTool.encrypt(gson.toJson(licenseKey));
+    DeviceInfo[] deviceInfos = gson.fromJson(raw, DeviceInfo[].class);
+    FileWriter fw = new FileWriter("./webapp/license-key");
+//    RSATool rsaTool = RSATool.getInstance();
+//    String publicKey = rsaTool.getPublicKeyBase64();
+//    String privateKey = rsaTool.getPrivateKeyBase64();
 
     // 写入数据库
     DAO dao = new DAO();
-    deviceInfo.validDate = date;
-    String sql =
-        "insert into t_device(owner, boardSn, macAdd, hddSn, privateKey, publicKey, validDate, sha256) "
-            + "VALUES (?,?,?,?,?,?,?,?)";
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    Date validDate = null;
-    try {
-      validDate = dateFormat.parse(deviceInfo.validDate);
-    } catch (ParseException e) {
-      e.printStackTrace();
-      return;
-    }
-    int count = dao
-        .update(sql, deviceInfo.owner, deviceInfo.boardSn, deviceInfo.macAdd, deviceInfo.hddSn,
-            privateKey, publicKey, validDate, sha256);
-    if (count > 0) {
-      System.out.println("updated " + count + " row success!");
-    }
+    List<String> res = new ArrayList<>();
 
-    try {
+    // device信息 做sha256 加密
+    for (DeviceInfo deviceInfo : deviceInfos) {
+      RSATool rsaTool = RSATool.getInstance();
+    String publicKey = rsaTool.getPublicKeyBase64();
+    String privateKey = rsaTool.getPrivateKeyBase64();
+      String date = deviceInfo.validDate;
+      deviceInfo.validDate = null;
+      String sha256 = SHA256Util.getSHA256StrJava(gson.toJson(deviceInfo));
+      // 使用私钥加密 硬件sha256 和有效期
+      LicenseKey licenseKey = new LicenseKey(sha256, date);
+      String licenseCode = rsaTool.encrypt(gson.toJson(licenseKey));
+
+      deviceInfo.validDate = date;
+      String sql =
+          "insert into t_device(owner, boardSn, macAdd, hddSn, privateKey, publicKey, validDate, sha256) "
+              + "VALUES (?,?,?,?,?,?,?,?)";
+      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+      Date validDate = null;
+      try {
+        validDate = dateFormat.parse(deviceInfo.validDate);
+      } catch (ParseException e) {
+        e.printStackTrace();
+        return;
+      }
+      int count = dao
+          .update(sql, deviceInfo.owner, deviceInfo.boardSn, deviceInfo.macAdd, deviceInfo.hddSn,
+              privateKey, publicKey, validDate, sha256);
+      if (count > 0) {
+        System.out.println("updated " + count + " row success!");
+      }
+
       //返回数据
       LicenseInfo licenseInfo = new LicenseInfo(deviceInfo.owner, publicKey,
           deviceInfo.validDate, licenseCode);
-      response(resp, gson.toJson(licenseInfo));
-    } catch (Exception e) {
-      e.printStackTrace();
+      res.add(gson.toJson(licenseInfo));
+
+      //生成证书文件
+      fw.append("{'license_code':'").append(licenseCode).append(", 'public_key':")
+          .append(publicKey).append("}");
+      fw.append("\n");
     }
 
+    try {
+      response(resp, gson.toJson(res));
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      fw.close();
+    }
   }
 
   private void response(HttpServletResponse resp, String result)

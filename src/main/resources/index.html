@@ -10,31 +10,50 @@
   生成软件授权码
 </p>
 <br>
-  姓名: <input type="text" name="owner" id="owner"><br>
-  主板序列号: <input type="text" name="boardSn" id="boardSn"><br>
-    MAC地址: <input type="text" name="macAdd" id="macAdd"><br>
-  系统硬盘序列号: <input type="text" name="hddSn" id="hddSn"><br>
-  证书有效期: <input type="date" name="validDate" id="validDate"> <br>
-  <input type="button" value="注册" id="submit"><br>
-  <div id = 'response'></div>
+<div id="table">
+</div>
+<button id="add" type="button" onclick="generateTable()">添加</button>
+<p></p>
+<input type="button" value="注册" id="submit"><br>
+<div id='response'></div>
 <script type="text/javascript">
+
+  function generateTable() {
+    var t = '  姓名: <input type="text" name="owner" class="owner" ><br>\n'
+        + '  主板序列号: <input type="text" name="boardSn" class="boardSn"><br>\n'
+        + '    MAC地址: <input type="text" name="macAdd" class="macAdd"><br>\n'
+        + '  系统硬盘序列号: <input type="text" name="hddSn" class="hddSn"><br>\n'
+        + '  证书有效期: <input type="date" name="validDate" class="validDate"> <br>\n'
+        + ' <br/>'
+    //var div = document.createElement('div');
+    //var table = document.getElementById('table');
+    //div.innerHTML(t);
+    //table.appendChild(div);
+    $('#table').before(t);
+  }
+
   //发送表单ajax请求
   $("#submit").on('click', function () {
-    var data = {
-      owner: $('#owner').val(),
-      boardSn: $('#boardSn').val(),
-      macAdd: $('#macAdd').val(),
-      hddSn: $('#hddSn').val(),
-      validDate: $('#validDate').val()
-    };
-    //var dataParse = JSON.parse(data);
+
+    var jsonData = [];
+    var lenth = $('.owner').length;
+    for (var i = 0; i < lenth; i++) {
+      jsonData[i] = {
+        owner: $($('.owner')[i]).val(),
+        boardSn: $($('.boardSn')[i]).val(),
+        macAdd: $($('.macAdd')[i]).val(),
+        hddSn: $($('.hddSn')[i]).val(),
+        validDate: $($('.validDate')[i]).val()
+      }
+    }
     $.ajax({
       url: "/generate",
       type: "POST",
-      data: JSON.stringify(data),
+      data: JSON.stringify(jsonData),
       contentType: "application/json",
       success: function (res) {
-        $('#response').html("<h1> 生成的注册码</h1> <br>" + JSON.stringify(res));
+        $('#response').html("<h1> 生成的注册码</h1> <br>" + JSON.stringify(res) +
+            "<br> <a  href='./license-key' >下载证书</a>");
       }
     });
   });
