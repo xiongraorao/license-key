@@ -1,6 +1,9 @@
 package com.oceanai;
 
+import com.oceanai.servlet.EncryptServlet;
+import com.oceanai.servlet.GenServlet;
 import com.oceanai.servlet.GenerateServlet;
+import javax.crypto.EncryptedPrivateKeyInfo;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -27,6 +30,8 @@ public class Main {
     ServletContextHandler contextHandler = new ServletContextHandler();
     contextHandler.setContextPath("/");
     contextHandler.addServlet(GenerateServlet.class, "/generate");
+    contextHandler.addServlet(GenServlet.class, "/gen");
+    contextHandler.addServlet(EncryptServlet.class, "/encrypt");
 
     ResourceHandler handler = new ResourceHandler();  //静态资源处理的handler
     handler.setDirectoriesListed(true);  //会显示一个列表

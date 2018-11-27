@@ -229,7 +229,7 @@ public class RSATool {
     return Base64.getEncoder().encodeToString(bytes);
   }
 
-  private Key base2key(String keyString, KEY type) {
+  public Key base2key(String keyString, KEY type) {
     byte[] bytes = base2bytes(keyString);
     return bytes2key(bytes, type);
   }
